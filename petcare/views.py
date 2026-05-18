@@ -52,6 +52,20 @@ def index(request):
     })
 
 
+def _ci_q(field: str, query: str) -> Q:
+    """
+    Case-insensitive contains для SQLite + кириллицы.
+    Дефолтный __icontains в SQLite опускает регистр только для ASCII,
+    поэтому собираем OR по всем вариантам регистра запроса.
+    """
+    variants = {query, query.lower(), query.upper(), query.capitalize(), query.title()}
+    expr = Q()
+    for v in variants:
+        if v:
+            expr |= Q(**{f'{field}__contains': v})
+    return expr
+
+
 def search(request):
     query = request.GET.get('q', '').strip()
     doctors = []
@@ -62,9 +76,9 @@ def search(request):
         doctors = (
             Doctor.objects.available()
             .filter(
-                Q(user__first_name__icontains=query)
-                | Q(user__last_name__icontains=query)
-                | Q(bio__icontains=query)
+                _ci_q('user__first_name', query)
+                | _ci_q('user__last_name', query)
+                | _ci_q('bio', query)
             )
             .select_related('user')
             .distinct()[:10]
@@ -73,17 +87,17 @@ def search(request):
             Service.objects
             .filter(is_active=True)
             .filter(
-                Q(name__icontains=query)
-                | Q(name_en__icontains=query)
-                | Q(description__icontains=query)
+                _ci_q('name', query)
+                | _ci_q('name_en', query)
+                | _ci_q('description', query)
             )[:10]
         )
         specialties = (
             Specialty.objects
             .filter(
-                Q(name__icontains=query)
-                | Q(name_en__icontains=query)
-                | Q(description__icontains=query)
+                _ci_q('name', query)
+                | _ci_q('name_en', query)
+                | _ci_q('description', query)
             )[:10]
         )
 
