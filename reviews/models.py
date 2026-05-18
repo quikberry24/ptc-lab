@@ -1,5 +1,6 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 
 class ApprovedReviewManager(models.Manager):
@@ -28,6 +29,8 @@ class Review(models.Model):
     is_approved = models.BooleanField('одобрен', default=False)
     created_at = models.DateTimeField('создан', auto_now_add=True)
     updated_at = models.DateTimeField('обновлён', auto_now=True)
+
+    history = HistoricalRecords()
 
     objects = models.Manager()
     approved = ApprovedReviewManager()

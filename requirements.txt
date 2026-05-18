@@ -4,3 +4,5 @@ django-debug-toolbar==4.4
 reportlab==4.4
 Faker==30.3.0
 python-dotenv==1.1.0
+django-simple-history==3.7.0
+django-import-export==4.3.0

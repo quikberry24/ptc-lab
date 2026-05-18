@@ -1,12 +1,14 @@
 from django.contrib import admin
+from import_export.admin import ImportExportModelAdmin
 
 from .models import Specialty, Doctor, DoctorSpecialty, Schedule
+from .resources import DoctorResource
 
 
 @admin.register(Specialty)
 class SpecialtyAdmin(admin.ModelAdmin):
-    list_display = ('name', 'show_doctors_count')
-    search_fields = ('name',)
+    list_display = ('name', 'name_en', 'show_doctors_count')
+    search_fields = ('name', 'name_en')
 
     @admin.display(description='Врачей')
     def show_doctors_count(self, obj):
@@ -24,7 +26,8 @@ class DoctorSpecialtyInline(admin.TabularInline):
 
 
 @admin.register(Doctor)
-class DoctorAdmin(admin.ModelAdmin):
+class DoctorAdmin(ImportExportModelAdmin):
+    resource_classes = [DoctorResource]
     list_display = ('__str__', 'get_email', 'experience_years', 'consultation_price', 'is_available')
     list_display_links = ('__str__', 'get_email')
     list_filter = ('is_available', 'specialties')

@@ -1,10 +1,12 @@
 from django.contrib import admin
+from simple_history.admin import SimpleHistoryAdmin
 
 from .models import Review
 
 
 @admin.register(Review)
-class ReviewAdmin(admin.ModelAdmin):
+class ReviewAdmin(SimpleHistoryAdmin):
+    history_list_display = ['is_approved', 'rating']
     list_display = ('author', 'doctor', 'rating', 'is_approved', 'created_at')
     list_display_links = ('author',)
     list_filter = ('is_approved', 'rating')

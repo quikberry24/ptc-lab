@@ -238,3 +238,36 @@ class AppointmentModelTest(TestCase):
 
     def test_not_upcoming_if_past(self):
         self.assertFalse(self._make(Appointment.Status.CONFIRMED, offset_days=-3, slot_hour=14).is_upcoming())
+
+
+class AppointmentHistoryTest(TestCase):
+    """django-simple-history фиксирует все изменения Appointment."""
+
+    def setUp(self):
+        self.client_user = User.objects.create_user(email='c@p.ru', password='x')
+        doc_user = User.objects.create_user(
+            email='doc@p.ru', password='x',
+            first_name='D', last_name='X', role='veterinarian',
+        )
+        self.doctor = Doctor.objects.create(user=doc_user, experience_years=1)
+        self.pet = Pet.objects.create(
+            owner=self.client_user, name='Pet', species='cat', age=12,
+        )
+        self.svc = Service.objects.create(name='X', price=Decimal('100'))
+
+    def test_status_changes_tracked_in_history(self):
+        apt = Appointment.objects.create(
+            client=self.client_user, doctor=self.doctor,
+            pet=self.pet, service=self.svc,
+            date=date(2026, 12, 1), time_slot=time(10, 0),
+            status=Appointment.Status.PENDING,
+        )
+        apt.status = Appointment.Status.CONFIRMED
+        apt.save()
+        apt.status = Appointment.Status.COMPLETED
+        apt.save()
+        history = list(apt.history.all().order_by('history_date'))
+        self.assertEqual(len(history), 3)
+        self.assertEqual(history[0].status, Appointment.Status.PENDING)
+        self.assertEqual(history[1].status, Appointment.Status.CONFIRMED)
+        self.assertEqual(history[-1].status, Appointment.Status.COMPLETED)

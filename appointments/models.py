@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models import Q, UniqueConstraint
 from django.urls import reverse
 from django.utils import timezone
+from simple_history.models import HistoricalRecords
 
 
 class Appointment(models.Model):
@@ -40,6 +41,8 @@ class Appointment(models.Model):
     cancel_reason = models.TextField('причина отмены', blank=True)
     created_at = models.DateTimeField('создана', auto_now_add=True)
     updated_at = models.DateTimeField('обновлена', auto_now=True)
+
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name = 'запись на приём'
@@ -93,6 +96,8 @@ class MedicalRecord(models.Model):
         validators=[FileExtensionValidator(['pdf', 'jpg', 'jpeg', 'png'])],
     )
     created_at = models.DateTimeField('создана', auto_now_add=True)
+
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name = 'запись в медкарте'

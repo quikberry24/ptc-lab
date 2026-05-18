@@ -4,13 +4,15 @@ from django.contrib import admin
 from django.http import HttpResponse
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
+from simple_history.admin import SimpleHistoryAdmin
 
 from .models import Appointment, MedicalRecord
 from .pdf_utils import register_fonts
 
 
 @admin.register(Appointment)
-class AppointmentAdmin(admin.ModelAdmin):
+class AppointmentAdmin(SimpleHistoryAdmin):
+    history_list_display = ['status']
     list_display = ('__str__', 'client', 'doctor', 'service', 'date', 'status', 'show_is_upcoming')
     list_display_links = ('__str__',)
     list_filter = ('status', 'date')
@@ -78,7 +80,8 @@ class AppointmentAdmin(admin.ModelAdmin):
 
 
 @admin.register(MedicalRecord)
-class MedicalRecordAdmin(admin.ModelAdmin):
+class MedicalRecordAdmin(SimpleHistoryAdmin):
+    history_list_display = ['diagnosis', 'treatment']
     list_display = ('__str__', 'pet', 'doctor', 'date', 'show_diagnosis_short', 'created_at')
     list_filter = ('date', 'doctor')
     search_fields = ('diagnosis', 'treatment', 'pet__name', 'pet__owner__email')
