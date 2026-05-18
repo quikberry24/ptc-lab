@@ -1990,3 +1990,85 @@ body {
     .detail-stats { grid-template-columns: 1fr; }
     .hero-search { flex-direction: column; }
 }
+
+/* === Лаб 11: виджет «Ближайшие свободные приёмы» + btn-favorite === */
+.slots-list {
+    list-style: decimal inside;
+    padding: 0;
+    margin: 0;
+    counter-reset: slot-counter;
+}
+.slots-list__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    background: #fff;
+    border: 1px solid var(--border, #e3e7eb);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    transition: box-shadow .15s ease, transform .15s ease;
+}
+.slots-list__item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transform: translateY(-1px);
+}
+.slots-list__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 4px;
+}
+.slots-list__doctor {
+    font-weight: 600;
+    color: var(--text, #1a2b3c);
+    text-decoration: none;
+}
+.slots-list__doctor:hover { color: var(--teal, #2e7d8a); }
+.slots-list__date {
+    color: var(--muted, #6b7785);
+    font-size: 0.95em;
+}
+.slots-list__date i { margin-right: 4px; }
+
+/* Кнопка «в избранное» — пока без функционала, маркер задела в БД */
+.btn-favorite {
+    background: transparent;
+    border: 1px solid var(--border, #e3e7eb);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--muted, #6b7785);
+    transition: color .15s ease, border-color .15s ease, background .15s ease;
+    padding: 0;
+}
+.btn-favorite:hover {
+    color: var(--accent, #e16f4d);
+    border-color: var(--accent, #e16f4d);
+    background: rgba(225, 111, 77, 0.06);
+}
+.btn-favorite i { font-size: 1.1rem; }
+
+/* Английское название под русским в карточке виджета и направления */
+.card-title-en, .specialty-card__name-en {
+    display: block;
+    font-size: 0.82em;
+    font-weight: 400;
+    color: var(--muted, #6b7785);
+    font-style: italic;
+    margin-top: 2px;
+}
+
+/* Дата на карточке (когда есть) */
+.card-date {
+    color: var(--muted, #6b7785);
+    font-size: 0.9em;
+    margin: 4px 0;
+}
+.card-date i { margin-right: 4px; }

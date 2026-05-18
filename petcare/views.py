@@ -1,4 +1,4 @@
-from django.db.models import Avg, Count, Q
+from django.db.models import Count, Q
 from django.shortcuts import render
 
 from appointments.models import Appointment
@@ -7,54 +7,48 @@ from reviews.models import Review
 from services.models import Service
 
 
-def index(request):
-    top_doctors = (
-        Doctor.objects
-        .filter(is_available=True)
-        .annotate(
-            avg_rating=Avg('reviews__rating'),
-            reviews_count=Count('reviews'),
-        )
-        .exclude(avg_rating=None)
-        .order_by('-avg_rating')
-        .select_related('user')[:5]
-    )
-
-    popular_services = (
-        Service.objects
-        .filter(is_active=True)
-        .annotate(popularity=Count('appointments'))
-        .order_by('-popularity', 'name')[:5]
-    )
-
-    latest_reviews = (
-        Review.objects
-        .filter(is_approved=True)
-        .select_related('author', 'doctor__user')
-        .order_by('-created_at')[:3]
-    )
-
-    specialties = (
-        Specialty.objects
-        .annotate(doctors_count=Count('doctors'))
-        .exclude(doctors_count=0)
-        .order_by('-doctors_count', 'name')[:6]
-    )
-
-    stats = {
-        'doctors_total': Doctor.objects.filter(is_available=True).count(),
+def _site_stats() -> dict:
+    return {
+        'doctors_total': Doctor.objects.available().count(),
         'services_total': Service.objects.filter(is_active=True).count(),
-        'completed_appointments': Appointment.objects
-            .filter(status=Appointment.Status.COMPLETED).count(),
+        'completed_appointments': Appointment.objects.filter(
+            status=Appointment.Status.COMPLETED,
+        ).count(),
         'specialties_total': Specialty.objects.count(),
     }
 
+
+def index(request):
+    """
+    Главная страница. Виджеты:
+      - Статистика (счётчики из 4 таблиц)
+      - Топ врачей (weighted ranking — сложная бизнес-логика)
+      - Популярные услуги (агрегат Count)
+      - Ближайшие свободные приёмы (Schedule × Appointment — даты + 2 доп. таблицы)
+      - Направления (Specialty с агрегатом + distinct)
+      - Свежие одобренные отзывы
+    """
     return render(request, 'index.html', {
-        'top_doctors': top_doctors,
-        'popular_services': popular_services,
-        'latest_reviews': latest_reviews,
-        'specialties': specialties,
-        'stats': stats,
+        'top_doctors': Doctor.objects.top_weighted(limit=5),
+        'popular_services': (
+            Service.objects
+            .filter(is_active=True)
+            .annotate(popularity=Count('appointments'))
+            .order_by('-popularity', 'name')[:5]
+        ),
+        'free_slots': Doctor.objects.next_free_slots(limit=5),
+        'latest_reviews': (
+            Review.approved
+            .select_related('author', 'doctor__user')
+            .order_by('-created_at')[:3]
+        ),
+        'specialties': (
+            Specialty.objects
+            .annotate(doctors_count=Count('doctors'))
+            .exclude(doctors_count=0)
+            .order_by('-doctors_count', 'name')[:6]
+        ),
+        'stats': _site_stats(),
     })
 
 
@@ -66,8 +60,7 @@ def search(request):
 
     if query:
         doctors = (
-            Doctor.objects
-            .filter(is_available=True)
+            Doctor.objects.available()
             .filter(
                 Q(user__first_name__icontains=query)
                 | Q(user__last_name__icontains=query)
@@ -79,11 +72,19 @@ def search(request):
         services = (
             Service.objects
             .filter(is_active=True)
-            .filter(Q(name__icontains=query) | Q(description__icontains=query))[:10]
+            .filter(
+                Q(name__icontains=query)
+                | Q(name_en__icontains=query)
+                | Q(description__icontains=query)
+            )[:10]
         )
         specialties = (
             Specialty.objects
-            .filter(Q(name__icontains=query) | Q(description__icontains=query))[:10]
+            .filter(
+                Q(name__icontains=query)
+                | Q(name_en__icontains=query)
+                | Q(description__icontains=query)
+            )[:10]
         )
 
     return render(request, 'search.html', {

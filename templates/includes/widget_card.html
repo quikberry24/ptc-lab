@@ -1,0 +1,35 @@
+{% comment %}
+Карточка для виджетов главной (DRY вместо дублирующихся блоков для врачей/услуг).
+Контекст:
+  rank          (int)  — номер в списке
+  img_url       (str)  — URL изображения
+  title_ru      (str)  — название на русском
+  title_en      (str)  — название на английском (опционально)
+  url           (str)  — URL детальной страницы
+  meta_lines    (list) — список строк-метаданных
+  date_str      (str)  — дата (опционально, рендерится отдельно)
+  can_favorite  (bool) — рисовать ли кнопку «избранное»
+  fav_target_id (int)  — id объекта для data-target-id
+{% endcomment %}
+<div class="card card--widget">
+    <span class="rank-badge">{{ rank }}</span>
+    <img src="{{ img_url }}" alt="{{ title_ru }}" class="card-img" loading="lazy">
+    <div class="card-body">
+        <h3 class="card-title">
+            <a href="{{ url }}">{{ title_ru }}</a>
+            {% if title_en %}<small class="card-title-en">{{ title_en }}</small>{% endif %}
+        </h3>
+        {% for line in meta_lines %}
+            {% if line %}<p class="card-text">{{ line }}</p>{% endif %}
+        {% endfor %}
+        {% if date_str %}
+            <p class="card-date"><i class="bi bi-calendar-event"></i> {{ date_str }}</p>
+        {% endif %}
+        {% if can_favorite %}
+            <button class="btn-favorite" data-target-id="{{ fav_target_id }}" type="button"
+                    title="Добавить в избранное (функционал в разработке)" aria-label="В избранное">
+                <i class="bi bi-heart"></i>
+            </button>
+        {% endif %}
+    </div>
+</div>

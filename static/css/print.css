@@ -1,0 +1,214 @@
+/*
+ * @media print — стили для печати/PDF главной страницы.
+ * Подключается через media="print" в index.html — на экранную вёрстку не влияет.
+ * Препод требует: «выбираете страницу, которую пользователь скорее всего захочет
+ * сравнить в pdf или распечатать, и адаптируете её. При Ctrl+F должен быть хороший вид.»
+ */
+@media print {
+    /* Скрыть интерактивные и навигационные элементы */
+    header.header,
+    .a11y-panel,
+    .a11y-toggle,
+    .alerts-container,
+    .hero,
+    .hero-search,
+    .hero-content form,
+    .widget-link,
+    .btn-favorite,
+    footer.footer,
+    .burger,
+    button {
+        display: none !important;
+    }
+
+    /* Базовая печатная типографика */
+    html, body {
+        font-family: 'Times New Roman', 'Liberation Serif', serif;
+        font-size: 11pt;
+        line-height: 1.4;
+        color: #000;
+        background: #fff;
+        margin: 0;
+        padding: 0;
+    }
+
+    main {
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Заголовок документа — добавляем через ::before, чтобы при печати на листе
+       было понятно, что это за документ. */
+    main::before {
+        content: "PetCare — ветеринарная клиника. Справка с главной страницы.";
+        display: block;
+        font-size: 14pt;
+        font-weight: bold;
+        text-align: center;
+        margin: 0.5cm 0 0.8cm 0;
+        border-bottom: 2px solid #000;
+        padding-bottom: 0.3cm;
+    }
+
+    .section {
+        page-break-inside: avoid;
+        margin: 0.4cm 0;
+        padding: 0;
+    }
+
+    h1, h2, h3,
+    .section-title {
+        color: #000;
+        page-break-after: avoid;
+        margin-top: 0.3cm;
+    }
+
+    .section-title {
+        font-size: 13pt;
+        border-bottom: 1px solid #888;
+        padding-bottom: 2pt;
+        margin-bottom: 0.3cm;
+    }
+
+    .widget-head {
+        display: block;
+    }
+
+    /* Карточки в виде списка для компактной печати */
+    .cards-grid,
+    .specialty-grid,
+    .reviews-grid {
+        display: block;
+    }
+
+    .card,
+    .card--widget,
+    .specialty-card,
+    .review-card,
+    .slots-list__item {
+        page-break-inside: avoid;
+        border: 1pt solid #555;
+        border-radius: 0;
+        padding: 0.3cm;
+        margin-bottom: 0.25cm;
+        background: #fff;
+        box-shadow: none;
+        display: block;
+    }
+
+    .card-img {
+        max-width: 3cm;
+        max-height: 3cm;
+        float: left;
+        margin: 0 0.3cm 0.2cm 0;
+        border: 1px solid #aaa;
+    }
+
+    .card-body {
+        overflow: hidden;
+    }
+
+    .card-title,
+    .specialty-card__name {
+        font-size: 12pt;
+        font-weight: bold;
+        margin: 0 0 0.1cm 0;
+    }
+
+    .card-title-en,
+    .specialty-card__name-en {
+        display: block;
+        font-style: italic;
+        font-size: 10pt;
+        color: #444;
+        font-weight: normal;
+    }
+
+    .card-text,
+    .card-date,
+    .card-price {
+        margin: 0.05cm 0;
+        font-size: 10.5pt;
+    }
+
+    .rank-badge,
+    .slots-list__rank {
+        display: inline-block;
+        border: 1pt solid #555;
+        border-radius: 50%;
+        width: 0.7cm;
+        height: 0.7cm;
+        line-height: 0.7cm;
+        text-align: center;
+        font-weight: bold;
+        background: #eee;
+        margin-right: 0.2cm;
+    }
+
+    /* Статистика — горизонтальный ряд */
+    .stats-grid {
+        display: table;
+        width: 100%;
+        margin: 0 0 0.5cm 0;
+    }
+    .stat-card {
+        display: table-cell;
+        width: 25%;
+        padding: 0.3cm;
+        border: 1pt solid #555;
+        text-align: center;
+        background: #fff;
+    }
+    .stat-card__icon { display: none; }
+    .stat-card__val {
+        display: block;
+        font-size: 16pt;
+        font-weight: bold;
+    }
+    .stat-card__label {
+        display: block;
+        font-size: 10pt;
+        color: #444;
+    }
+
+    /* Список свободных слотов */
+    .slots-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .slots-list__item {
+        display: block;
+    }
+    .slots-list__doctor {
+        font-weight: bold;
+        color: #000;
+        text-decoration: none;
+    }
+    .slots-list__date {
+        display: block;
+        font-size: 10pt;
+        color: #333;
+    }
+
+    /* Подписи URL рядом со ссылками — препод видит куда ведут */
+    a {
+        color: #000;
+        text-decoration: underline;
+    }
+    a[href^="http"]:not(.no-print-url)::after {
+        content: " (" attr(href) ")";
+        font-size: 9pt;
+        color: #555;
+    }
+    a[href^="#"]::after,
+    a[href^="/"]::after {
+        content: "";
+    }
+
+    /* Поля страницы */
+    @page {
+        size: A4;
+        margin: 1.5cm 1.5cm 1.8cm 1.5cm;
+    }
+}

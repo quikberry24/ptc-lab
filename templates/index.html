@@ -4,6 +4,10 @@
 
 {% block title %}PetCare — Ветеринарная клиника{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/print.css' %}" media="print">
+{% endblock %}
+
 {% block content %}
 <section class="hero hero-teal">
     <div class="hero-content">
@@ -56,20 +60,10 @@
     </div>
     <div class="cards-grid">
         {% for doctor in top_doctors %}
-        <div class="card">
-            <span class="rank-badge">{{ forloop.counter }}</span>
             {% doctor_photo_url doctor as doc_img %}
-            <img src="{{ doc_img }}" alt="{{ doctor }}" class="card-img" loading="lazy">
-            <div class="card-body">
-                <h3 class="card-title">{{ doctor.user.get_full_name }}</h3>
-                <p class="card-text">Стаж: {{ doctor.experience_years }} лет</p>
-                <p class="card-text"><i class="bi bi-star-fill" style="color:var(--orange);"></i> {{ doctor.avg_rating|floatformat:1 }} ({{ doctor.reviews_count }} отзыв.)</p>
-                <p class="card-price">{{ doctor.consultation_price|floatformat:0 }} руб.</p>
-                <a href="{{ doctor.get_absolute_url }}" class="btn btn-outline btn-sm">Подробнее</a>
-            </div>
-        </div>
+            {% include 'includes/widget_card.html' with rank=forloop.counter img_url=doc_img title_ru=doctor.user.get_full_name title_en='' url=doctor.get_absolute_url meta_lines=doctor.meta_lines date_str='' can_favorite=True fav_target_id=doctor.pk only %}
         {% empty %}
-        <p>Пока нет врачей с отзывами.</p>
+            <p>Пока нет врачей с отзывами.</p>
         {% endfor %}
     </div>
 </section>
@@ -81,26 +75,44 @@
     </div>
     <div class="cards-grid">
         {% for service in popular_services %}
-        <div class="card">
-            <span class="rank-badge">{{ forloop.counter }}</span>
             {% service_photo_url service as svc_img %}
-            <img src="{{ svc_img }}" alt="{{ service.name }}" class="card-img" loading="lazy">
-            <div class="card-body">
-                <h3 class="card-title">
-                    <a href="{% url 'service-detail' service.pk %}">{{ service.name }}</a>
-                </h3>
-                <p class="card-text">{{ service.description|truncatewords:15 }}</p>
-                <p class="card-text">{{ service.duration_minutes }} мин · {% if service.popularity %}{{ service.popularity }} записей{% else %}новая услуга{% endif %}</p>
-                <p class="card-price">{{ service.price|floatformat:0 }} руб.</p>
-                {% if service.specialty %}
-                    <span class="tag">{{ service.specialty.name }}</span>
-                {% endif %}
-            </div>
-        </div>
+            {% include 'includes/widget_card.html' with rank=forloop.counter img_url=svc_img title_ru=service.name title_en=service.name_en url=service.get_absolute_url meta_lines=service.meta_lines date_str='' can_favorite=False fav_target_id=service.pk only %}
         {% empty %}
-        <p>Пока нет услуг.</p>
+            <p>Пока нет услуг.</p>
         {% endfor %}
     </div>
+</section>
+
+<section class="section">
+    <div class="widget-head">
+        <h2 class="section-title">Ближайшие свободные приёмы</h2>
+        {% if user.is_authenticated %}
+            <a href="{% url 'appointment-create' %}" class="widget-link">Записаться →</a>
+        {% else %}
+            <a href="{% url 'login' %}" class="widget-link">Войти и записаться →</a>
+        {% endif %}
+    </div>
+    <ol class="slots-list">
+        {% for slot in free_slots %}
+        <li class="slots-list__item">
+            <div class="slots-list__body">
+                <a href="{{ slot.doctor.get_absolute_url }}" class="slots-list__doctor">
+                    {{ slot.doctor.user.get_full_name|default:slot.doctor.user.email }}
+                </a>
+                <span class="slots-list__date">
+                    <i class="bi bi-calendar-event"></i>
+                    {{ slot.date|date:"d.m.Y, l" }} · {{ slot.start_time|time:"H:i" }}–{{ slot.end_time|time:"H:i" }}
+                </span>
+            </div>
+            <button class="btn-favorite" data-target-id="{{ slot.doctor.pk }}" type="button"
+                    title="Добавить в избранное (функционал в разработке)" aria-label="В избранное">
+                <i class="bi bi-heart"></i>
+            </button>
+        </li>
+        {% empty %}
+            <p>В ближайшую неделю свободных слотов нет.</p>
+        {% endfor %}
+    </ol>
 </section>
 
 <section class="section">
@@ -113,7 +125,10 @@
         <a href="{% url 'doctor-list' %}?specialty={{ spec.pk }}" class="specialty-card">
             {% spec_icon spec.name as spec_cls %}
             <div class="specialty-card__icon"><i class="bi {{ spec_cls }}"></i></div>
-            <div class="specialty-card__name">{{ spec.name }}</div>
+            <div class="specialty-card__name">
+                {{ spec.name }}
+                {% if spec.name_en %}<small class="specialty-card__name-en">{{ spec.name_en }}</small>{% endif %}
+            </div>
             <div class="specialty-card__count">
                 {{ spec.doctors_count }} {% if spec.doctors_count == 1 %}врач{% elif spec.doctors_count < 5 %}врача{% else %}врачей{% endif %}
             </div>
