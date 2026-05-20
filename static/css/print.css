@@ -133,6 +133,7 @@
 
     .rank-badge,
     .slots-list__rank {
+        position: static;
         display: inline-block;
         border: 1pt solid #555;
         border-radius: 50%;
@@ -141,34 +142,49 @@
         line-height: 0.7cm;
         text-align: center;
         font-weight: bold;
+        color: #000;
         background: #eee;
+        box-shadow: none;
         margin-right: 0.2cm;
     }
 
-    /* Статистика — горизонтальный ряд */
+    /* Статистика — горизонтальный ряд.
+       На экране карточки имеют цветной градиент и белый текст. При печати фоны
+       по умолчанию не выводятся, поэтому принудительно задаём чёрный текст
+       на белом фоне, иначе цифры (кол-во врачей и т.п.) пропадают. */
     .stats-grid {
         display: table;
         width: 100%;
         margin: 0 0 0.5cm 0;
+        border-collapse: collapse;
     }
-    .stat-card {
+    .stat-card,
+    .stat-card--teal,
+    .stat-card--orange,
+    .stat-card--navy,
+    .stat-card--green {
         display: table-cell;
         width: 25%;
         padding: 0.3cm;
         border: 1pt solid #555;
         text-align: center;
+        color: #000;
         background: #fff;
     }
+    .stat-card::before { display: none; }
     .stat-card__icon { display: none; }
+    .stat-card__body { display: block; }
     .stat-card__val {
         display: block;
         font-size: 16pt;
         font-weight: bold;
+        color: #000;
     }
     .stat-card__label {
         display: block;
         font-size: 10pt;
-        color: #444;
+        color: #333;
+        opacity: 1;
     }
 
     /* Список свободных слотов */
